@@ -506,10 +506,23 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         
         comparisons.forEach((item, index) => {
-            const quantity = Math.floor(bitcoinPrice / item.price);
+            const quantity = bitcoinPrice / item.price;
             const element = document.querySelector(`.comparison:nth-child(${index + 1}) .comparison-value`);
             if (element) {
-                element.textContent = quantity.toLocaleString();
+                // Format with appropriate decimal places
+                let formattedQuantity;
+                if (quantity >= 1) {
+                    // For items where you can buy 1 or more, show 1 decimal place
+                    formattedQuantity = quantity.toFixed(1);
+                } else {
+                    // For items where you can't buy 1, show 2 decimal places
+                    formattedQuantity = quantity.toFixed(2);
+                }
+                
+                // Remove trailing zeros for cleaner display
+                formattedQuantity = parseFloat(formattedQuantity).toString();
+                
+                element.textContent = formattedQuantity;
                 
                 // Add progress bar
                 const progressElement = element.parentElement.querySelector('.comparison-progress');
@@ -538,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 150);
                         
                         // Show tooltip
-                        showTooltip(comparisonCard, `${quantity.toLocaleString()} ${item.name} with 1 Bitcoin!`);
+                        showTooltip(comparisonCard, `${formattedQuantity} ${item.name} with 1 Bitcoin!`);
                     });
                 }
             }
