@@ -2,6 +2,21 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Script loaded successfully!');
     
+    // Mobile detection and optimizations
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isSmallScreen = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        console.log('Mobile device detected - applying optimizations');
+        // Reduce particle count on mobile for better performance
+        document.body.classList.add('mobile-device');
+    }
+    
+    if (isSmallScreen) {
+        console.log('Small screen detected - applying mobile layout');
+        document.body.classList.add('small-screen');
+    }
+    
     const priceElement = document.getElementById('bitcoin-price');
     const changeElement = document.getElementById('change-24h');
     const highElement = document.getElementById('high-24h');
@@ -188,8 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const btcDominance = ((btcMarketCap / totalMarketCap) * 100).toFixed(1);
                 
                 // Update DOM with real-time data
-                document.getElementById('total-market-cap').textContent = '$' + formatLargeNumber(totalMarketCap);
-                document.getElementById('total-volume').textContent = '$' + formatLargeNumber(totalVolume);
+                document.getElementById('total-market-cap').textContent = '$' + formatNumberForMobile(totalMarketCap);
+                document.getElementById('total-volume').textContent = '$' + formatNumberForMobile(totalVolume);
                 document.getElementById('btc-dominance').textContent = btcDominance + '%';
                 
                 console.log('Real-time market data updated:', {
@@ -221,8 +236,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const btcDominance = ((btcVolume / totalVolume) * 100).toFixed(1);
                 
-                document.getElementById('total-market-cap').textContent = '$' + formatLargeNumber(totalVolume * 0.15);
-                document.getElementById('total-volume').textContent = '$' + formatLargeNumber(totalVolume);
+                document.getElementById('total-market-cap').textContent = '$' + formatNumberForMobile(totalVolume * 0.15);
+                document.getElementById('total-volume').textContent = '$' + formatNumberForMobile(totalVolume);
                 document.getElementById('btc-dominance').textContent = btcDominance + '%';
                 
             } catch (fallbackError) {
@@ -236,7 +251,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const particlesContainer = document.getElementById('particles');
         if (!particlesContainer) return;
         
-        for (let i = 0; i < 20; i++) {
+        // Reduce particle count on mobile for better performance
+        const particleCount = isMobile ? 8 : 20;
+        
+        for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
             particle.className = 'particle';
             particle.textContent = '₿';
@@ -251,12 +269,12 @@ document.addEventListener('DOMContentLoaded', function() {
             particle.style.animationDelay = delay + 's';
             particle.style.animationDuration = duration + 's';
             
-            // Random size variation
-            const size = 1 + Math.random() * 0.5;
+            // Random size variation (smaller on mobile)
+            const size = isMobile ? (0.8 + Math.random() * 0.3) : (1 + Math.random() * 0.5);
             particle.style.fontSize = (1.5 * size) + 'rem';
             
-            // Random opacity
-            const opacity = 0.2 + Math.random() * 0.4;
+            // Random opacity (lower on mobile)
+            const opacity = isMobile ? (0.1 + Math.random() * 0.2) : (0.2 + Math.random() * 0.4);
             particle.style.opacity = opacity;
             
             particlesContainer.appendChild(particle);
@@ -400,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
             highElement.textContent = '$' + highPrice.toLocaleString();
             lowElement.textContent = '$' + lowPrice.toLocaleString();
             
-            const marketCapFormatted = formatLargeNumber(marketCap);
+            const marketCapFormatted = formatNumberForMobile(marketCap);
             marketCapElement.textContent = '$' + marketCapFormatted;
             
             // Update last updated time
@@ -457,6 +475,24 @@ document.addEventListener('DOMContentLoaded', function() {
             return (num / 1e3).toFixed(2) + 'K';
         }
         return num.toLocaleString();
+    }
+    
+    // Function to format numbers for mobile display
+    function formatNumberForMobile(num) {
+        if (isSmallScreen) {
+            // Use shorter format on mobile
+            if (num >= 1e12) {
+                return (num / 1e12).toFixed(1) + 'T';
+            } else if (num >= 1e9) {
+                return (num / 1e9).toFixed(1) + 'B';
+            } else if (num >= 1e6) {
+                return (num / 1e6).toFixed(1) + 'M';
+            } else if (num >= 1e3) {
+                return (num / 1e3).toFixed(1) + 'K';
+            }
+            return num.toLocaleString();
+        }
+        return formatLargeNumber(num);
     }
     
     // Function to update comparison items
@@ -536,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "⚡ Bitcoin mining uses more energy than entire countries like Argentina or Norway!",
             "🎯 There will only ever be 21 million Bitcoins - that's fewer than the population of Australia!",
             "🚀 Bitcoin's price has increased by over 146,000,000% since its creation in 2009!",
-            "💎 The most expensive Bitcoin transaction fee ever paid was $3.1 million for a single transfer!",
+            "💸 The most expensive Bitcoin transaction fee ever paid was $3.1 million for a single transfer!",
             "🌍 Bitcoin is accepted in over 20,000 businesses worldwide, including Microsoft and Tesla!",
             "🔒 Bitcoin's blockchain has never been hacked - it's the most secure financial network ever created!",
             "🎪 The Winklevoss twins own over 1% of all Bitcoin in existence - that's over 100,000 BTC!",
