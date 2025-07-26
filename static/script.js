@@ -343,32 +343,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to fetch Bitcoin data from API
     async function fetchBitcoinData() {
         try {
-            const response = await fetch('/api/bitcoin');
-            const result = await response.json();
+            // Call Binance API directly for GitHub Pages
+            const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+            const data = await response.json();
             
-            if (result.error) {
-                priceElement.textContent = 'Error';
-                changeElement.textContent = 'Error';
-                return;
-            }
-            
-            const data = result.data;
             if (!data) {
                 priceElement.textContent = 'Error';
                 changeElement.textContent = 'Error';
                 return;
             }
             
+            // Calculate price change percentage
+            const priceChangePercent = parseFloat(data.priceChangePercent);
+            const currentPrice = parseFloat(data.lastPrice);
+            const highPrice = parseFloat(data.highPrice);
+            const lowPrice = parseFloat(data.lowPrice);
+            const volume = parseFloat(data.volume);
+            
+            // Calculate market cap (approximate)
+            const marketCap = currentPrice * 19500000; // Approximate BTC supply
+            
             // Update price with animation
-            const formattedPrice = data.price.toLocaleString();
+            const formattedPrice = currentPrice.toLocaleString();
             priceElement.textContent = '$' + formattedPrice;
             
             // Update change with color and sound
-            const change = data.change_24h;
-            const changeText = (change >= 0 ? '+' : '') + change + '%';
+            const changeText = (priceChangePercent >= 0 ? '+' : '') + priceChangePercent.toFixed(2) + '%';
             changeElement.textContent = changeText;
             
-            if (change >= 0) {
+            if (priceChangePercent >= 0) {
                 changeElement.className = 'change positive';
                 changeElement.innerHTML = '📈 ' + changeText;
             } else {
@@ -378,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Play sound and create confetti for significant changes
             if (previousPrice > 0) {
-                const priceChange = data.price - previousPrice;
+                const priceChange = currentPrice - previousPrice;
                 const percentChange = (priceChange / previousPrice) * 100;
                 
                 if (Math.abs(percentChange) > 1) {
@@ -391,13 +394,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            previousPrice = data.price;
+            previousPrice = currentPrice;
             
             // Update other stats
-            highElement.textContent = '$' + data.high_24h.toLocaleString();
-            lowElement.textContent = '$' + data.low_24h.toLocaleString();
+            highElement.textContent = '$' + highPrice.toLocaleString();
+            lowElement.textContent = '$' + lowPrice.toLocaleString();
             
-            const marketCapFormatted = formatLargeNumber(data.market_cap);
+            const marketCapFormatted = formatLargeNumber(marketCap);
             marketCapElement.textContent = '$' + marketCapFormatted;
             
             // Update last updated time
@@ -411,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Update comparisons
-            updateComparisons(data.price);
+            updateComparisons(currentPrice);
             
         } catch (error) {
             console.error('Error fetching Bitcoin data:', error);
